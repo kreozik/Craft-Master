@@ -1,0 +1,74 @@
+erDiagram
+    users ||--o| seller_profiles : "имеет"
+    users ||--o{ products : "продаёт"
+    users ||--o{ orders : "покупает"
+    categories ||--o{ products : "содержит"
+    products ||--o{ product_images : "имеет"
+    products ||--o{ order_items : "включает"
+    orders ||--o{ order_items : "содержит"
+    orders ||--o| payments : "оплачивается"
+
+    users {
+        bigint id PK
+        text role
+        text name
+        text email UK
+        text password_hash
+        timestamptz created_at
+    }
+
+    seller_profiles {
+        bigint id PK
+        bigint user_id FK
+        text shop_name
+        text description
+        text avatar_url
+    }
+
+    categories {
+        bigint id PK
+        text name UK
+    }
+
+    products {
+        bigint id PK
+        bigint seller_id FK
+        bigint category_id FK
+        text title
+        text description
+        numeric price
+        text currency
+        text status
+        timestamptz created_at
+    }
+
+    product_images {
+        bigint id PK
+        bigint product_id FK
+        text url
+    }
+
+    orders {
+        bigint id PK
+        bigint buyer_id FK
+        text status
+        numeric total_amount
+        timestamptz created_at
+    }
+
+    order_items {
+        bigint id PK
+        bigint order_id FK
+        bigint product_id FK
+        int qty
+        numeric unit_price
+    }
+
+    payments {
+        bigint id PK
+        bigint order_id FK
+        text provider
+        text payment_status
+        numeric amount
+        timestamptz created_at
+    }

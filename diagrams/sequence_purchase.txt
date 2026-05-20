@@ -1,0 +1,25 @@
+Sequence diagram: Покупка товара (упрощенно)
+
+Actors/Services:
+- Frontend (UI)
+- API (Node)
+- DB
+
+1) UI: GET /api/products?category=...
+2) API: SELECT products + images
+3) API -> UI: 200 products
+
+4) UI: POST /api/cart/checkout  {buyer, items}
+5) API:
+   - START TRANSACTION
+   - INSERT INTO ORDERS
+   - INSERT INTO ORDER_ITEMS (qty, unit_price)
+   - COMMIT
+6) API -> UI: 201 orderId
+
+(Дальше может быть этап оплаты)
+
+7) UI: POST /api/payments {orderId}
+8) API: UPDATE PAYMENTS + ORDERS.status
+9) API -> UI: 200 payment
+

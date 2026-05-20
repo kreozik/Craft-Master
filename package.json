@@ -1,0 +1,14 @@
+{
+  "name": "handmade-market-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run dev:frontend & npm run dev:backend & npm run dev:python",
+    "dev:frontend": "cd frontend && npm run dev -- --host 0.0.0.0 --port 5173",
+    "dev:backend": "cd backend && npm start",
+    "dev:python": "cd python && python -m app.__main__"
+  }
+}
+
+

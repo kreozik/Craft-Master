@@ -1,0 +1,89 @@
+@startuml erd_handmade_marketplace
+
+!define TABLE(name) entity name << (T,#FFAAAA) >>
+!define PK(x) <u>x</u>
+!define FK(x) <i>x</i>
+
+TABLE(users) {
+  PK(id) : BIGSERIAL
+  --
+  role : TEXT
+  name : TEXT
+  email : TEXT
+  password_hash : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+TABLE(seller_profiles) {
+  PK(id) : BIGSERIAL
+  FK(user_id) : BIGINT
+  --
+  shop_name : TEXT
+  description : TEXT
+  avatar_url : TEXT
+}
+
+TABLE(categories) {
+  PK(id) : BIGSERIAL
+  --
+  name : TEXT
+}
+
+TABLE(products) {
+  PK(id) : BIGSERIAL
+  FK(seller_id) : BIGINT
+  FK(category_id) : BIGINT
+  --
+  title : TEXT
+  description : TEXT
+  price : NUMERIC
+  currency : TEXT
+  status : TEXT
+  created_at : TIMESTAMPTZ
+}
+
+TABLE(product_images) {
+  PK(id) : BIGSERIAL
+  FK(product_id) : BIGINT
+  --
+  url : TEXT
+}
+
+TABLE(orders) {
+  PK(id) : BIGSERIAL
+  FK(buyer_id) : BIGINT
+  --
+  status : TEXT
+  total_amount : NUMERIC
+  created_at : TIMESTAMPTZ
+}
+
+TABLE(order_items) {
+  PK(id) : BIGSERIAL
+  FK(order_id) : BIGINT
+  FK(product_id) : BIGINT
+  --
+  qty : INT
+  unit_price : NUMERIC
+}
+
+TABLE(payments) {
+  PK(id) : BIGSERIAL
+  FK(order_id) : BIGINT
+  --
+  provider : TEXT
+  payment_status : TEXT
+  amount : NUMERIC
+  created_at : TIMESTAMPTZ
+}
+
+users ||--o| seller_profiles : "имеет профиль"
+users ||--o{ products : "продаёт"
+users ||--o{ orders : "покупает"
+categories ||--o{ products : "содержит"
+products ||--o{ product_images : "имеет"
+products ||--o{ order_items : "включает"
+orders ||--o{ order_items : "содержит"
+orders ||--o| payments : "оплачивается"
+
+@enduml

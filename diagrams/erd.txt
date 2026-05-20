@@ -1,0 +1,71 @@
+ERD (логическая модель) — Handmade Marketplace
+
+Сущности:
+
+USERS
+- id (PK)
+- role (BUYER | SELLER | ADMIN)
+- name
+- email (UNIQUE)
+- password_hash
+- created_at
+
+SELLER_PROFILES
+- id (PK)
+- user_id (FK -> USERS.id, UNIQUE)
+- shop_name
+- description
+- avatar_url
+
+CATEGORIES
+- id (PK)
+- name (UNIQUE)
+
+PRODUCTS
+- id (PK)
+- seller_id (FK -> USERS.id)
+- category_id (FK -> CATEGORIES.id)
+- title
+- description
+- price
+- currency
+- status (ACTIVE | DISABLED)
+- created_at
+
+PRODUCT_IMAGES
+- id (PK)
+- product_id (FK -> PRODUCTS.id)
+- url
+
+ORDERS
+- id (PK)
+- buyer_id (FK -> USERS.id)
+- status (CREATED | PAID | SHIPPED | DELIVERED | CANCELED)
+- total_amount
+- created_at
+
+ORDER_ITEMS
+- id (PK)
+- order_id (FK -> ORDERS.id)
+- product_id (FK -> PRODUCTS.id)
+- qty
+- unit_price
+
+PAYMENTS (опционально)
+- id (PK)
+- order_id (FK -> ORDERS.id, UNIQUE)
+- provider
+- payment_status
+- amount
+- created_at
+
+RELATIONSHIPS (кардинальности):
+- USERS (SELLER) 1—N SELLER_PROFILES
+- USERS (SELLER) 1—N PRODUCTS
+- CATEGORIES 1—N PRODUCTS
+- PRODUCTS 1—N PRODUCT_IMAGES
+- USERS (BUYER) 1—N ORDERS
+- ORDERS 1—N ORDER_ITEMS
+- PRODUCTS 1—N ORDER_ITEMS
+- ORDERS 0..1 — 1 PAYMENTS
+

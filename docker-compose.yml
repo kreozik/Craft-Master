@@ -1,0 +1,68 @@
+services:
+  api:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PY_SERVICE_URL=http://python:9001
+      - DATABASE_URL=postgres://market_user:market_password@db:5432/handmade_market
+      - SEED_DEMO=true
+      - PG_SSL=false
+    depends_on:
+      python:
+        condition: service_started
+      db:
+        condition: service_healthy
+
+
+  python:
+    build:
+      context: ./python
+    ports:
+      - "9001:9001"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: handmade_market
+      POSTGRES_USER: market_user
+      POSTGRES_PASSWORD: market_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U market_user -d handmade_market"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+
+volumes:
+  db_data:
+
+
