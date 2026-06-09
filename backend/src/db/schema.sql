@@ -72,3 +72,28 @@ CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller_id);
 CREATE INDEX IF NOT EXISTS idx_orders_buyer ON orders(buyer_id);
 
+-- ============================================
+-- ADMIN PANEL EXTENSIONS
+-- ============================================
+
+-- Блокировка пользователей (без удаления)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT false;
+
+-- Расширим статусы товаров для модерации
+ALTER TABLE products DROP CONSTRAINT IF EXISTS products_status_check;
+ALTER TABLE products ADD CONSTRAINT products_status_check CHECK (status IN ('PENDING','ACTIVE','DISABLED','REJECTED'));
+
+-- Лог действий админа (для аудита)
+CREATE TABLE IF NOT EXISTS admin_logs (
+  id          BIGSERIAL PRIMARY KEY,
+  admin_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  action      TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id   BIGINT,
+  details     JSONB,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_logs_admin ON admin_logs(admin_id);
+CREATE INDEX IF NOT EXISTS idx_admin_logs_created ON admin_logs(created_at DESC);
+

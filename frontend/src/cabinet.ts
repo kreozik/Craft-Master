@@ -521,6 +521,9 @@ function renderCabinetHeader() {
       <div class="panel-row">
         <div>Почта: ${user.email}</div>
         <div>Роль: ${user.role}</div>
+        ${user.role === 'ADMIN'
+          ? `<a class="btn-secondary btn-full" href="http://localhost:5173/admin.html" target="_blank" rel="noopener">Открыть админку</a>`
+          : ''}
         <button class="btn-secondary btn-full btn-lk-open-card">Привязать карту</button>
         <button class="btn-secondary btn-full btn-lk-logout">Выйти</button>
       </div>

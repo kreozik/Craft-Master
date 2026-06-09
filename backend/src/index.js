@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { createAdminRouter } from './routes/admin/index.js';
 
 import { Pool } from 'pg';
 import fs from 'fs';
@@ -102,6 +103,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
 
+    // НОВОЕ: проверка блокировки
+    const { rows: blockCheck } = await pool.query('SELECT is_blocked FROM users WHERE id = $1', [user.id]);
+    if (blockCheck[0]?.is_blocked) {
+      return res.status(403).json({ error: 'Аккаунт заблокирован' });
+    }
+
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
     return res.json({ token, user: { id: user.id, role: user.role, name: user.name, email: user.email } });
@@ -193,6 +200,8 @@ app.get('/api/products/:id', async (req, res) => {
     return res.status(500).json({ error: 'DB error' });
   }
 });
+
+app.use('/api/admin', createAdminRouter(pool));
 
 app.listen(8000, async () => {
   console.log('Backend API listening on :8000');

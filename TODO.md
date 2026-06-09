@@ -25,3 +25,17 @@
 - [ ] Прогнать smoke-test (curl) на основные эндпоинты
 
 
+
+
+## 6) Админ-панель ✅
+- [x] Расширение схемы: `is_blocked`, статус `PENDING/REJECTED`, таблица `admin_logs`
+- [x] Скрипт создания дефолтного админа (`scripts/createAdmin.js`)
+- [x] Middleware: `authenticate` и `requireAdmin`
+- [x] Backend API: `/api/admin/stats`, `/users`, `/products`, `/orders`, `/logs`
+- [x] Блокировка пользователей, смена ролей, сброс пароля
+- [x] Модерация товаров (PENDING → ACTIVE / REJECTED)
+- [x] Управление статусами заказов
+- [x] Журнал действий администратора
+- [x] Frontend: отдельная страница `/admin.html` (Vite multi-page)
+- [x] Frontend: логин, дашборд, таблицы с пагинацией и фильтрами
+- [x] Защита логина (заблокированный пользователь не входит)
