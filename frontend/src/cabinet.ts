@@ -19,7 +19,7 @@ type CardBinding = {
   type: string;
 };
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://craft-master.onrender.com';
 const STORAGE_KEY = 'picolini_jwt_token';
 const STORAGE_CARD_KEY = 'picolini_bound_card';
 
@@ -522,7 +522,7 @@ function renderCabinetHeader() {
         <div>Почта: ${user.email}</div>
         <div>Роль: ${user.role}</div>
         ${user.role === 'ADMIN'
-          ? `<a class="btn-secondary btn-full" href="http://localhost:5173/admin.html" target="_blank" rel="noopener">Открыть админку</a>`
+          ? `<a class="btn-secondary btn-full" href="https://craft-master-1.onrender.com/admin.html" target="_blank" rel="noopener">Открыть админку</a>`
           : ''}
         <button class="btn-secondary btn-full btn-lk-open-card">Привязать карту</button>
         <button class="btn-secondary btn-full btn-lk-logout">Выйти</button>
