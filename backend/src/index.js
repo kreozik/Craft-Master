@@ -149,6 +149,28 @@ app.get('/api/me', async (req, res) => {
   }
 });
 
+app.get('/api/admin/me', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Требуется авторизация' });
+  }
+  const token = authHeader.slice(7);
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    const result = await pool.query(
+      'SELECT id, role, name, email, is_blocked FROM users WHERE id = $1',
+      [payload.userId]
+    );
+    const user = result.rows[0];
+    if (!user) return res.status(401).json({ error: 'Не найден' });
+    if (user.is_blocked) return res.status(403).json({ error: 'Заблокирован' });
+    if (user.role !== 'ADMIN') return res.status(403).json({ error: 'Нет прав' });
+    return res.json(user);
+  } catch {
+    return res.status(401).json({ error: 'Недействительный токен' });
+  }
+});
+
 app.get('/api/products', async (req, res) => {
   const category = req.query.category;
 
