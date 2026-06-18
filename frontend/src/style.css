@@ -1581,3 +1581,437 @@ footer {
     max-width: 100%;
   }
 }
+
+/* =============================================
+   ПОИСК И СОРТИРОВКА
+   ============================================= */
+
+.catalog-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: white;
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 4px rgba(45, 90, 71, 0.1);
+}
+
+.sort-box select {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: white;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sort-box select:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 4px rgba(45, 90, 71, 0.1);
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+/* =============================================
+   ФОРМА ОФОРМЛЕНИЯ ЗАКАЗА
+   ============================================= */
+
+.checkout-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.checkout-modal.show {
+  display: flex;
+}
+
+.checkout-modal-content {
+  background: white;
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.checkout-modal-content h2 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--forest-dark);
+  margin-bottom: 24px;
+}
+
+.checkout-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.checkout-modal-close:hover {
+  color: var(--text-main);
+  transform: scale(1.1);
+}
+
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.checkout-section {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+}
+
+.checkout-section:last-of-type {
+  border-bottom: none;
+}
+
+.checkout-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 4px rgba(45, 90, 71, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group input[type="radio"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.form-group label input[type="radio"] {
+  display: inline;
+  margin-bottom: 0;
+  width: auto;
+  margin-right: 8px;
+}
+
+.form-group label input[type="radio"] + * {
+  vertical-align: middle;
+}
+
+.checkout-summary {
+  background: var(--bg-main);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  margin-top: 24px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.summary-row strong {
+  font-weight: 600;
+  color: var(--forest);
+}
+
+.summary-row.total {
+  border-top: 2px solid var(--border);
+  padding-top: 12px;
+  margin-top: 12px;
+  font-size: 16px;
+}
+
+.summary-row.total strong {
+  font-size: 18px;
+  color: var(--terracotta);
+}
+
+.btn-submit-checkout {
+  width: 100%;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 24px;
+}
+
+.btn-submit-checkout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(45, 90, 71, 0.3);
+}
+
+@media (max-width: 640px) {
+  .catalog-controls {
+    flex-direction: column;
+  }
+  
+  .search-box {
+    min-width: 100%;
+  }
+  
+  .checkout-modal-content {
+    padding: 24px;
+  }
+}
+
+/* =============================================
+   СТРАНИЦА "СТАТЬ ПРОДАВЦОМ"
+   ============================================= */
+
+.become-seller-content {
+  display: grid;
+  gap: 48px;
+  padding: 40px 0;
+}
+
+.seller-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.seller-benefits h2 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--forest-dark);
+  margin-bottom: 24px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.benefit-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px var(--shadow-hover);
+  border-color: var(--forest-light);
+}
+
+.benefit-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.benefit-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: 8px;
+}
+
+.benefit-card p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.seller-application-form {
+  background: linear-gradient(135deg, var(--sage-light) 0%, var(--cream) 100%);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+}
+
+.seller-application-form h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--forest-dark);
+  margin-bottom: 24px;
+}
+
+.seller-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 600px;
+}
+
+.seller-form .form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--forest-dark);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.seller-form input,
+.seller-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--text-main);
+  background: white;
+  transition: var(--transition);
+}
+
+.seller-form input:focus,
+.seller-form textarea:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 4px rgba(45, 90, 71, 0.1);
+}
+
+.btn-seller-submit {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-seller-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(45, 90, 71, 0.3);
+}
+
+.form-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 12px;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .seller-application-form {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .seller-application-form {
+    padding: 20px;
+  }
+  
+  .seller-application-form h2 {
+    font-size: 24px;
+  }
+}

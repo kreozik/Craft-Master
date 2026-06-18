@@ -83,6 +83,20 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN NOT NULL DEFAULT f
 ALTER TABLE products DROP CONSTRAINT IF EXISTS products_status_check;
 ALTER TABLE products ADD CONSTRAINT products_status_check CHECK (status IN ('PENDING','ACTIVE','DISABLED','REJECTED'));
 
+-- Заявки от претендентов на продавца
+CREATE TABLE IF NOT EXISTS seller_applications (
+  id          BIGSERIAL PRIMARY KEY,
+  user_id     BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  shop_name   TEXT NOT NULL,
+  description TEXT,
+  status      TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING','APPROVED','REJECTED')),
+  rejection_reason TEXT,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_seller_applications_status ON seller_applications(status);
+
 -- Лог действий админа (для аудита)
 CREATE TABLE IF NOT EXISTS admin_logs (
   id          BIGSERIAL PRIMARY KEY,

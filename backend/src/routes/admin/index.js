@@ -6,6 +6,7 @@ import { createUsersRouter } from './users.js';
 import { createProductsRouter } from './products.js';
 import { createOrdersRouter } from './orders.js';
 import { createLogsRouter } from './logs.js';
+import { createSellerApplicationsRouter } from './seller-applications.js';
 
 export function createAdminRouter(pool) {
   const router = Router();
@@ -23,6 +24,7 @@ export function createAdminRouter(pool) {
   router.use('/products', createProductsRouter(pool));
   router.use('/orders', createOrdersRouter(pool));
   router.use('/logs', createLogsRouter(pool));
+  router.use('/seller-applications', createSellerApplicationsRouter(pool));
 
   return router;
 }

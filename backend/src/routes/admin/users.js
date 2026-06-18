@@ -98,8 +98,8 @@ export function createUsersRouter(pool) {
       return res.status(400).json({ error: 'Недопустимая роль' });
     }
 
-    if (id === req.adminUser.id && role !== 'ADMIN') {
-      return res.status(400).json({ error: 'Нельзя понизить самого себя' });
+    if (id === req.adminUser.id) {
+      return res.status(400).json({ error: 'Нельзя изменять свою роль' });
     }
 
     try {
@@ -127,6 +127,10 @@ export function createUsersRouter(pool) {
   router.patch('/:id/password', async (req, res) => {
     const id = Number(req.params.id);
     const { password } = req.body;
+
+    if (id === req.adminUser.id) {
+      return res.status(400).json({ error: 'Нельзя менять свой пароль через админ-панель' });
+    }
 
     if (!password || password.length < 6) {
       return res.status(400).json({ error: 'Пароль должен быть не короче 6 символов' });

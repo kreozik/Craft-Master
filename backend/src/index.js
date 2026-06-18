@@ -4,6 +4,7 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { createAdminRouter } from './routes/admin/index.js';
+import { createSellersRouter } from './routes/sellers.js';
 
 import { Pool } from 'pg';
 import fs from 'fs';
@@ -224,6 +225,7 @@ app.get('/api/products/:id', async (req, res) => {
 });
 
 app.use('/api/admin', createAdminRouter(pool));
+app.use('/api/sellers', createSellersRouter(pool));
 
 app.listen(8000, async () => {
   console.log('Backend API listening on :8000');

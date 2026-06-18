@@ -32,7 +32,10 @@ const state = {
   products: [] as Product[],
   cart: [] as CartItem[],
   currentCategory: 'all',
-  currentPage: 'catalog' as 'catalog' | 'masters' | 'about' | 'delivery' | 'contacts' | 'cabinet',
+  searchQuery: '',
+  sortBy: 'name' as 'name' | 'price-asc' | 'price-desc',
+  filterByMaster: '' as string,
+  currentPage: 'catalog' as 'catalog' | 'masters' | 'about' | 'delivery' | 'contacts' | 'cabinet' | 'become-seller',
   isCartOpen: false,
 };
 
@@ -330,10 +333,8 @@ function renderCartModal(): void {
 function closeCartModal(): void { const modal = document.querySelector('.cart-modal'); if (modal) modal.classList.remove('show'); }
 function checkout(): void {
   if (state.cart.length === 0) return;
-  const total = getCartTotal(); const count = getCartCount();
   closeCartModal();
-  showToast(`🎉 Заказ на ${formatPrice(total)} (${count} товаров) оформлен!`);
-  clearCart();
+  showCheckoutForm();
 }
 
 // Глобальные функции
@@ -349,15 +350,65 @@ window.checkout = checkout;
 // ============================================
 
 function renderCatalog(): string {
-  const filtered = state.currentCategory === 'all' ? state.products : state.products.filter(p => p.category.toLowerCase().includes(state.currentCategory));
+  let filtered = state.products;
+
+  // Фильтр по категориям
+  if (state.currentCategory !== 'all') {
+    filtered = filtered.filter(p => p.category === state.currentCategory);
+  }
+
+  // Фильтр по мастеру
+  if (state.filterByMaster) {
+    filtered = filtered.filter(p => p.seller === state.filterByMaster);
+  }
+
+  // Фильтр по поиску
+  if (state.searchQuery) {
+    const query = state.searchQuery.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.name.toLowerCase().includes(query) || 
+      (p.description && p.description.toLowerCase().includes(query))
+    );
+  }
+
+  // Сортировка
+  if (state.sortBy === 'price-asc') {
+    filtered = filtered.sort((a, b) => a.price - b.price);
+  } else if (state.sortBy === 'price-desc') {
+    filtered = filtered.sort((a, b) => b.price - a.price);
+  } else {
+    filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   return `
     <div class="wrap">
       <sidebar><h3 class="sidebar-title">Категории</h3><ul class="category-list">
-        ${categories.map(cat => `<li class="category-item"><a href="#" class="category-link ${state.currentCategory === (cat.name === 'Все товары' ? 'all' : cat.name.toLowerCase()) ? 'active' : ''}" data-category="${cat.name === 'Все товары' ? 'all' : cat.name.toLowerCase()}"><span>${cat.icon} ${cat.name}</span><span class="category-count">${cat.count}</span></a></li>`).join('')}
+        ${categories.map(cat => {
+          const catValue = cat.name === 'Все товары' ? 'all' : cat.name;
+          return `<li class="category-item"><a href="#" class="category-link ${state.currentCategory === catValue ? 'active' : ''}" data-category="${catValue}"><span>${cat.icon} ${cat.name}</span><span class="category-count">${cat.count}</span></a></li>`;
+        }).join('')}
       </ul></sidebar>
-      <main class="main-content"><h2>Каталог товаров</h2><div class="grid">
-        ${filtered.map(p => `<div class="card" data-product-id="${p.id}"><div class="card-image-placeholder">${getEmojiByCategory(p.category)}</div><div class="card-body"><div class="name">${p.name}</div><span class="meta">🌿 ${p.category}</span><div class="card-footer"><div class="price">${formatPrice(p.price)}</div><button class="btn-buy">В корзину</button></div></div></div>`).join('')}
-      </div></main>
+      <main class="main-content">
+        <div class="catalog-controls">
+          <div class="search-box">
+            <input type="text" id="search-input" placeholder="🔍 Поиск товаров..." value="${state.searchQuery}">
+          </div>
+          <div class="sort-box">
+            <select id="sort-select" onchange="window.setSortBy(this.value)">
+              <option value="name" ${state.sortBy === 'name' ? 'selected' : ''}>По названию</option>
+              <option value="price-asc" ${state.sortBy === 'price-asc' ? 'selected' : ''}>Цена: сначала дешевле</option>
+              <option value="price-desc" ${state.sortBy === 'price-desc' ? 'selected' : ''}>Цена: сначала дороже</option>
+            </select>
+          </div>
+        </div>
+        <h2>${state.filterByMaster ? `Товары мастера: ${state.filterByMaster}` : 'Каталог товаров'}</h2>
+        <div class="grid">
+          ${filtered.length === 0 
+            ? '<div class="no-results">😔 Товары не найдены</div>'
+            : filtered.map(p => `<div class="card" data-product-id="${p.id}"><div class="card-image-placeholder">${getEmojiByCategory(p.category)}</div><div class="card-body"><div class="name">${p.name}</div><span class="meta">🌿 ${p.category}</span><div class="card-footer"><div class="price">${formatPrice(p.price)}</div><button class="btn-buy">В корзину</button></div></div></div>`).join('')
+          }
+        </div>
+      </main>
     </div>`;
 }
 
@@ -404,16 +455,55 @@ function renderContacts(): string {
     </form></div></div></div>`;
 }
 
+function renderBecomeSeller(): string {
+  return `<div class="page-container"><div class="page-header"><h1 class="page-title">🏪 Стать продавцом</h1><p class="page-subtitle">Присоединяйтесь к нашему сообществу мастеров</p></div>
+    <div class="become-seller-content">
+      <div class="seller-benefits">
+        <h2>Почему стоит стать продавцом?</h2>
+        <div class="benefits-grid">
+          <div class="benefit-card"><div class="benefit-icon">📈</div><h3>Растите вместе с нами</h3><p>Доступ к растущей аудитории покупателей</p></div>
+          <div class="benefit-card"><div class="benefit-icon">💰</div><h3>Конкурентные комиссии</h3><p>Прозрачные условия и честные ставки</p></div>
+          <div class="benefit-card"><div class="benefit-icon">🛠️</div><h3>Удобный инструмент</h3><p>Простое управление товарами и заказами</p></div>
+          <div class="benefit-card"><div class="benefit-icon">🤝</div><h3>Поддержка</h3><p>Помощь нашей команды 24/7</p></div>
+        </div>
+      </div>
+      
+      <div class="seller-application-form">
+        <h2>📝 Подать заявку</h2>
+        <form class="seller-form" onsubmit="window.submitSellerApplication(event)">
+          <div class="form-group">
+            <label>Название вашего магазина *</label>
+            <input type="text" name="shop_name" placeholder="Мастерская [Ваше имя]" required maxlength="100">
+          </div>
+          <div class="form-group">
+            <label>Описание (что вы создаёте) *</label>
+            <textarea name="description" placeholder="Расскажите о вашем мастерстве, специализации и опыте..." rows="5" required maxlength="500"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Email для связи *</label>
+            <input type="email" name="email" placeholder="ваш@email.com" readonly>
+          </div>
+          <button type="submit" class="btn-seller-submit">Отправить заявку</button>
+          <p class="form-note">Заявка будет рассмотрена в течение 24 часов. Мы свяжемся с вами по email.</p>
+        </form>
+      </div>
+    </div></div>`;
+}
+
 // ============================================
 // НАВИГАЦИЯ И ФИЛЬТРЫ
 // ============================================
 
 function navigateTo(page: string): void { state.currentPage = page as any; renderPage(); window.scrollTo(0, 0); }
-function filterByCategory(category: string): void { state.currentCategory = category; state.currentPage = 'catalog'; renderPage(); }
-function filterByMaster(shopName: string): void { state.currentPage = 'catalog'; state.currentCategory = 'all'; renderPage(); showToast(`Товары мастера "${shopName}"`); }
+function filterByCategory(category: string): void { state.currentCategory = category; state.filterByMaster = ''; state.currentPage = 'catalog'; renderPage(); }
+function filterByMaster(shopName: string): void { state.currentPage = 'catalog'; state.currentCategory = 'all'; state.filterByMaster = shopName; renderPage(); window.scrollTo(0, 0); }
+function setSortBy(sortValue: string): void { state.sortBy = sortValue as any; renderPage(); }
+function setSearchQuery(query: string): void { state.searchQuery = query; renderPage(); }
 
 window.filterByCategory = filterByCategory;
 window.filterByMaster = filterByMaster;
+window.setSortBy = setSortBy;
+window.setSearchQuery = setSearchQuery;
 window.addToCartFromList = (id: number) => { 
   console.log('addToCartFromList called with id:', id);
   console.log('state.products:', state.products);
@@ -450,6 +540,181 @@ function showProductModal(product: Product): void {
 
 window.showProduct = (id: number) => { const p = state.products.find(p => p.id === id); if (p) showProductModal(p); };
 
+function showCheckoutForm(): void {
+  const total = getCartTotal();
+  const count = getCartCount();
+  
+  let modal = document.querySelector('.checkout-modal') as HTMLElement;
+  if (!modal) { 
+    modal = document.createElement('div'); 
+    modal.className = 'checkout-modal'; 
+    document.body.appendChild(modal); 
+  }
+  
+  modal.innerHTML = `
+    <div class="checkout-modal-content">
+      <button class="checkout-modal-close">✕</button>
+      <h2>📋 Оформление заказа</h2>
+      <form class="checkout-form" onsubmit="window.submitCheckout(event)">
+        <div class="checkout-section">
+          <h3>Получатель</h3>
+          <div class="form-group">
+            <label>ФИО</label>
+            <input type="text" name="fullname" placeholder="Иван Иванов" required>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="ivan@example.com" required>
+          </div>
+          <div class="form-group">
+            <label>Телефон</label>
+            <input type="tel" name="phone" placeholder="+7 (900) 123-45-67" required>
+          </div>
+        </div>
+        
+        <div class="checkout-section">
+          <h3>Адрес доставки</h3>
+          <div class="form-group">
+            <label>Город</label>
+            <input type="text" name="city" placeholder="Москва" required>
+          </div>
+          <div class="form-group">
+            <label>Адрес</label>
+            <input type="text" name="address" placeholder="ул. Ленина, д. 1, кв. 1" required>
+          </div>
+          <div class="form-group">
+            <label>Почтовый индекс</label>
+            <input type="text" name="postal" placeholder="123456" required>
+          </div>
+        </div>
+        
+        <div class="checkout-section">
+          <h3>Способ доставки</h3>
+          <div class="form-group">
+            <label>
+              <input type="radio" name="delivery" value="courier" checked> 🚗 Курьер (3-7 дней, +300₽)
+            </label>
+            <label>
+              <input type="radio" name="delivery" value="pickup"> 📦 Пункт выдачи (1-3 дня, +200₽)
+            </label>
+            <label>
+              <input type="radio" name="delivery" value="mail"> 📮 Почта (7-14 дней, +250₽)
+            </label>
+          </div>
+        </div>
+        
+        <div class="checkout-section">
+          <h3>Способ оплаты</h3>
+          <div class="form-group">
+            <label>
+              <input type="radio" name="payment" value="card" checked> 💳 Банковская карта
+            </label>
+            <label>
+              <input type="radio" name="payment" value="sbp"> 📱 СБП (Система быстрых платежей)
+            </label>
+            <label>
+              <input type="radio" name="payment" value="cash"> 💰 При получении
+            </label>
+          </div>
+        </div>
+        
+        <div class="checkout-section">
+          <h3>Комментарий (опционально)</h3>
+          <textarea name="comment" placeholder="Особые пожелания..." rows="3"></textarea>
+        </div>
+        
+        <div class="checkout-summary">
+          <div class="summary-row">
+            <span>Товаров (${count}):</span>
+            <strong>${formatPrice(total)}</strong>
+          </div>
+          <div class="summary-row">
+            <span>Доставка:</span>
+            <strong>+300₽</strong>
+          </div>
+          <div class="summary-row total">
+            <span>Итого:</span>
+            <strong>${formatPrice(total + 300)}</strong>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn-submit-checkout">✓ Оформить заказ</button>
+      </form>
+    </div>
+  `;
+  
+  modal.classList.add('show');
+  modal.querySelector('.checkout-modal-close')?.addEventListener('click', () => {
+    modal.classList.remove('show');
+  });
+}
+
+window.submitCheckout = (e: Event) => {
+  e.preventDefault();
+  const form = e.target as HTMLFormElement;
+  const data = new FormData(form);
+  const orderData = {
+    fullname: data.get('fullname'),
+    email: data.get('email'),
+    phone: data.get('phone'),
+    city: data.get('city'),
+    address: data.get('address'),
+    postal: data.get('postal'),
+    delivery: data.get('delivery'),
+    payment: data.get('payment'),
+    comment: data.get('comment'),
+    items: state.cart,
+    total: getCartTotal(),
+  };
+  console.log('Order submitted:', orderData);
+  
+  const total = getCartTotal();
+  const count = getCartCount();
+  
+  const modal = document.querySelector('.checkout-modal');
+  if (modal) modal.classList.remove('show');
+  
+  showToast(`🎉 Спасибо! Заказ на ${formatPrice(total)} (${count} товаров) оформлен!`);
+  clearCart();
+};
+
+window.submitSellerApplication = async (e: Event) => {
+  e.preventDefault();
+  const form = e.target as HTMLFormElement;
+  const data = new FormData(form);
+  
+  const shopName = data.get('shop_name');
+  const description = data.get('description');
+  
+  try {
+    const response = await fetch(`${API_BASE}/api/sellers/apply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('picolini_jwt_token') || ''}`
+      },
+      body: JSON.stringify({
+        shop_name: shopName,
+        description: description
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) {
+      showToast(`❌ ${result.error || 'Ошибка при подаче заявки'}`);
+      return;
+    }
+    
+    showToast('✅ Заявка успешно отправлена! Ожидайте ответа.');
+    form.reset();
+    setTimeout(() => renderPage(), 1000);
+  } catch (error) {
+    console.error('Error submitting seller application:', error);
+    showToast('❌ Ошибка при отправке заявки');
+  }
+};
+
 function renderPage(): void {
   const main = document.querySelector('.main-content-area');
   if (!main) return;
@@ -458,6 +723,7 @@ function renderPage(): void {
   else if (state.currentPage === 'about') main.innerHTML = renderAbout();
   else if (state.currentPage === 'delivery') main.innerHTML = renderDelivery();
   else if (state.currentPage === 'contacts') main.innerHTML = renderContacts();
+  else if (state.currentPage === 'become-seller') main.innerHTML = renderBecomeSeller();
   else if (state.currentPage === 'cabinet') {
     // Кабинет рендерится отдельным файлом
     // Ожидаем контейнер #cabinet-root
@@ -469,6 +735,29 @@ function renderPage(): void {
         if (root) m.renderCabinet(root);
       }
     });
+  }
+  
+  // Добавить обработчик для поиска
+  if (state.currentPage === 'catalog') {
+    setTimeout(() => {
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          state.searchQuery = (e.target as HTMLInputElement).value;
+          renderPage();
+        });
+      }
+    }, 0);
+  }
+  
+  // Заполнить email в форме продавца
+  if (state.currentPage === 'become-seller') {
+    setTimeout(() => {
+      const emailInput = document.querySelector('input[name="email"]') as HTMLInputElement;
+      if (emailInput) {
+        emailInput.value = localStorage.getItem('picolini_user_email') || 'no-email@example.com';
+      }
+    }, 0);
   }
 }
 
@@ -520,7 +809,7 @@ function render(products: Product[]) {
     <footer><div class="footer-container">
       <div class="footer-brand"><div class="footer-logo">🌿 Picolini</div><p class="footer-desc">Маркетплейс товаров ручной работы.</p></div>
       <div><h4 class="footer-title">Покупателям</h4><ul class="footer-links"><li><a href="#" onclick="window.navigateTo('catalog'); return false;">Каталог</a></li><li><a href="#" onclick="window.navigateTo('delivery'); return false;">Доставка</a></li></ul></div>
-      <div><h4 class="footer-title">Мастерам</h4><ul class="footer-links"><li><a href="#" onclick="showToast('Регистрация скоро!')">Стать продавцом</a></li></ul></div>
+      <div><h4 class="footer-title">Мастерам</h4><ul class="footer-links"><li><a href="#" onclick="window.navigateTo('become-seller'); return false;">Стать продавцом</a></li></ul></div>
       <div><h4 class="footer-title">Контакты</h4><ul class="footer-links"><li><a href="mailto:support@picolini.ru">📧 support@picolini.ru</a></li><li><a href="tel:+78001234567">📱 +7 (800) 123-45-67</a></li></ul></div>
     </div><div class="footer-bottom">© 2024 Picolini. Сделано с 💚</div></footer>`;
 }
