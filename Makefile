@@ -1,20 +1,26 @@
 # Windows users: run with `mingw32-make` or `make` if available.
 # Also included npm scripts below in case Makefile isn't usable.
+.PHONY: dev up down restart logs-db clean
 
-.PHONY: dev up down frontend backend python
+# 1. Запуск всего проекта одной командой в фоне
+dev:
+	@echo "Запуск инфраструктуры маркетплейса в Docker..."
+	docker-compose up -d --build
+	@echo "Фронтенд доступен на: http://localhost:5173"
+	@echo "pgAdmin доступен на: http://localhost:5050"
 
-dev: frontend backend python
-	@echo "Starting all services (frontend + backend + python)..."
-	@echo "Open: http://localhost:5173"
+# 2. Полная остановка всех контейнеров
+down:
+	@echo "Остановка всех сервисов..."
+	docker-compose down
 
-frontend:
-	cd frontend && npm run dev -- --host 0.0.0.0 --port 5173
+# 3. Быстрый перезапуск (если обновил код)
+restart: down dev
 
-backend:
-	cd backend && npm start
+# 4. Посмотреть, что происходит внутри базы данных (логи)
+logs-db:
+	docker-compose logs -f database
 
-python:
-	cd python && python -m app.__main__
-
-пароль БД: market_password
-
+# 5. Очистить неиспользуемый кэш Docker (если кончилось место)
+clean:
+	docker system prune -f
